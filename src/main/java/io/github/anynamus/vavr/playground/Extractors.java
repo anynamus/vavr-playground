@@ -1,9 +1,12 @@
 package io.github.anynamus.vavr.playground;
 
+import io.vavr.Function2;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
+
+import java.util.function.Function;
 
 public final class Extractors {
 
@@ -56,5 +59,21 @@ public final class Extractors {
                                 Validation::valid
                         )
         );
+    }
+
+    public static <A, B, R> Extractor<R> combine(
+            Extractor<A> first,
+            Extractor<B> second,
+            Function2<A, B, R> constructor) {
+
+        return row ->
+                Validation.combine(
+                                first.extract(row),
+                                second.extract(row)
+                        )
+                        .ap(constructor)
+                        .mapError(errors ->
+                                errors.flatMap(Function.identity())
+                        );
     }
 }

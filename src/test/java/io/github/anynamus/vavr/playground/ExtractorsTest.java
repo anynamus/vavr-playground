@@ -1,5 +1,6 @@
 package io.github.anynamus.vavr.playground;
 
+import io.github.anynamus.vavr.playground.model.Person;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import io.vavr.control.Option;
@@ -181,6 +182,75 @@ class ExtractorsTest {
 
         assertThat(result).isEqualTo(
                 Validation.valid(42)
+        );
+    }
+
+    @Test
+    void shouldCombineTwoExtractors() {
+        var firstName = Extractors.required(0);
+        var lastName = Extractors.required(1);
+
+        var person = Extractors.combine(
+                firstName,
+                lastName,
+                Person::new
+        );
+
+        var result = person.extract(
+                List.of("John", "Doe")
+        );
+
+        assertThat(result).isEqualTo(
+                Validation.valid(
+                        new Person("John", "Doe")
+                )
+        );
+    }
+
+    @Test
+    void shouldReturnErrorWhenOneExtractionFails() {
+        var firstName = Extractors.required(0);
+        var lastName = Extractors.required(1);
+
+        var person = Extractors.combine(
+                firstName,
+                lastName,
+                Person::new
+        );
+
+        var result = person.extract(
+                List.of("", "Doe")
+        );
+
+        assertThat(result).isEqualTo(
+                Validation.<Seq<String>, Person>invalid(
+                        List.of("Column 0 is required")
+                )
+        );
+    }
+
+    @Test
+    void shouldAccumulateErrors() {
+        var firstName = Extractors.required(0);
+        var lastName = Extractors.required(1);
+
+        var person = Extractors.combine(
+                firstName,
+                lastName,
+                Person::new
+        );
+
+        var result = person.extract(
+                List.of("", "")
+        );
+
+        assertThat(result).isEqualTo(
+                Validation.<Seq<String>, Person>invalid(
+                        List.of(
+                                "Column 0 is required",
+                                "Column 1 is required"
+                        )
+                )
         );
     }
 }
