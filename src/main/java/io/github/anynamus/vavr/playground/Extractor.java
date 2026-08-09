@@ -11,6 +11,18 @@ import java.util.function.Function;
 public interface Extractor<A> {
     Validation<Seq<ExtractionError>, A> extract(List<String> row);
 
+    default Extractor<A> named(String field) {
+        return row ->
+                extract(row).mapError(
+                        errors -> errors.map(
+                                error -> new ExtractionError(
+                                        field,
+                                        error.message()
+                                )
+                        )
+                );
+    }
+
     default <B> Extractor<B> map(Function<? super A, ? extends B> mapper) {
         return row -> extract(row).map(mapper);
     }
