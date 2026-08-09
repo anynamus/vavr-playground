@@ -1,6 +1,7 @@
 package io.github.anynamus.vavr.playground;
 
 import io.vavr.collection.List;
+import io.vavr.control.Option;
 import io.vavr.control.Validation;
 
 public final class Extractors {
@@ -25,6 +26,22 @@ public final class Extractors {
             }
 
             return Validation.valid(value);
+        };
+    }
+
+    public static Extractor<Option<String>> optional(int column) {
+        return row -> {
+            if (column >= row.size()) {
+                return Validation.invalid(
+                        List.of("Column " + column + " is missing")
+                );
+            }
+
+            String value = row.get(column);
+
+            return Validation.valid(
+                    Option.of(value).filter(v -> !v.isBlank())
+            );
         };
     }
 }
