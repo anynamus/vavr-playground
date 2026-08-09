@@ -143,4 +143,44 @@ class ExtractorsTest {
                 )
         );
     }
+
+    @Test
+    void shouldExtractInteger() {
+        var row = List.of("42");
+
+        Extractor<String> stringExtractor = Extractors.required(0).map(String::trim);
+
+        var result = Extractors.asInt(stringExtractor)
+                .extract(row);
+
+        assertThat(result).isEqualTo(
+                Validation.valid(42)
+        );
+    }
+
+    @Test
+    void shouldRejectInvalidInteger() {
+        var row = List.of("abc");
+
+        Extractor<String> stringExtractor = Extractors.required(0).map(String::trim);
+        var result = Extractors.asInt(stringExtractor).extract(row);
+
+        assertThat(result).isEqualTo(
+                Validation.<Seq<String>, Integer>invalid(
+                        List.of("Invalid integer: abc")
+                )
+        );
+    }
+
+    @Test
+    void shouldTrimBeforeConvertingToInteger() {
+        var row = List.of(" 42 ");
+
+        Extractor<String> stringExtractor = Extractors.required(0).map(String::trim);
+        var result = Extractors.asInt(stringExtractor).extract(row);
+
+        assertThat(result).isEqualTo(
+                Validation.valid(42)
+        );
+    }
 }

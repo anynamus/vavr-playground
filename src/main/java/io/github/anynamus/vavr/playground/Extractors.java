@@ -2,6 +2,7 @@ package io.github.anynamus.vavr.playground;
 
 import io.vavr.collection.List;
 import io.vavr.control.Option;
+import io.vavr.control.Try;
 import io.vavr.control.Validation;
 
 public final class Extractors {
@@ -43,5 +44,17 @@ public final class Extractors {
                     Option.of(value).filter(v -> !v.isBlank())
             );
         };
+    }
+
+    public static Extractor<Integer> asInt(Extractor<String> extractor) {
+        return extractor.flatMap(value ->
+                Try.of(() -> Integer.parseInt(value))
+                        .fold(
+                                error -> Validation.invalid(
+                                        List.of("Invalid integer: " + value)
+                                ),
+                                Validation::valid
+                        )
+        );
     }
 }
