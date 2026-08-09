@@ -109,4 +109,38 @@ class ExtractorsTest {
                 )
         );
     }
+
+    @Test
+    void shouldFlatMapExtractedValue() {
+        var row = List.of("John");
+
+        var result = Extractors.required(0)
+                .flatMap(value ->
+                        Validation.valid(value.toUpperCase())
+                )
+                .extract(row);
+
+        assertThat(result).isEqualTo(
+                Validation.valid("JOHN")
+        );
+    }
+
+    @Test
+    void shouldReturnTransformationError() {
+        var row = List.of("John");
+
+        var result = Extractors.required(0)
+                .flatMap(value ->
+                        Validation.invalid(
+                                List.of("Invalid value")
+                        )
+                )
+                .extract(row);
+
+        assertThat(result).isEqualTo(
+                Validation.<Seq<String>, String>invalid(
+                        List.of("Invalid value")
+                )
+        );
+    }
 }

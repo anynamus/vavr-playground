@@ -11,6 +11,12 @@ public interface Extractor<A> {
     Validation<Seq<String>, A> extract(List<String> row);
 
     default <B> Extractor<B> map(Function<? super A, ? extends B> mapper) {
-        return row -> extract(row).map(mapper);
+        return row -> extract(row)
+                .map(mapper);
+    }
+
+    default <B> Extractor<B> flatMap(Function<? super A, Validation<Seq<String>, B>> mapper) {
+        return row -> extract(row)
+                .flatMap(mapper);
     }
 }
