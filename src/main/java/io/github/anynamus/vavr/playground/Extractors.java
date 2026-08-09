@@ -2,6 +2,7 @@ package io.github.anynamus.vavr.playground;
 
 import io.github.anynamus.vavr.playground.model.ExtractionError;
 import io.vavr.Function2;
+import io.vavr.Function3;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
@@ -83,6 +84,24 @@ public final class Extractors {
                 Validation.combine(
                                 first.extract(row),
                                 second.extract(row)
+                        )
+                        .ap(constructor)
+                        .mapError(errors ->
+                                errors.flatMap(Function.identity())
+                        );
+    }
+
+    public static <A, B, C, R> Extractor<R> combine(
+            Extractor<A> first,
+            Extractor<B> second,
+            Extractor<C> third,
+            Function3<A, B, C, R> constructor) {
+
+        return row ->
+                Validation.combine(
+                                first.extract(row),
+                                second.extract(row),
+                                third.extract(row)
                         )
                         .ap(constructor)
                         .mapError(errors ->

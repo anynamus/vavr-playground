@@ -2,6 +2,7 @@ package io.github.anynamus.vavr.playground;
 
 import io.github.anynamus.vavr.playground.model.ExtractionError;
 import io.github.anynamus.vavr.playground.model.Person;
+import io.github.anynamus.vavr.playground.model.PersonProfile;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import io.vavr.control.Option;
@@ -285,6 +286,102 @@ class ExtractorsTest {
                                 new ExtractionError(
                                         "lastName",
                                         "Value is required"
+                                )
+                        )
+                )
+        );
+    }
+
+    @Test
+    void shouldCombineThreeExtractors() {
+        var firstName = Extractors.required(0, "firstName");
+        var lastName = Extractors.required(1, "lastName");
+        var age = Extractors.asInt(
+                Extractors.required(2, "age")
+        );
+
+        var person = Extractors.combine(
+                firstName,
+                lastName,
+                age,
+                PersonProfile::new
+        );
+
+        var result = person.extract(
+                List.of("John", "Doe", "42")
+        );
+
+        assertThat(result).isEqualTo(
+                Validation.valid(
+                        new PersonProfile("John", "Doe", 42)
+                )
+        );
+    }
+
+    @Test
+    void shouldReturnErrorWhenOneExtractionFailsWithCombine3() {
+        var firstName = Extractors.required(0, "firstName");
+        var lastName = Extractors.required(1, "lastName");
+        var age = Extractors.asInt(
+                Extractors.required(2, "age")
+        );
+
+        var person = Extractors.combine(
+                firstName,
+                lastName,
+                age,
+                PersonProfile::new
+        );
+
+        var result = person.extract(
+                List.of("John", "Doe", "abc")
+        );
+
+        assertThat(result).isEqualTo(
+                Validation.<Seq<ExtractionError>, PersonProfile>invalid(
+                        List.of(
+                                new ExtractionError(
+                                        "",
+                                        "Invalid integer: abc"
+                                )
+                        )
+                )
+        );
+    }
+
+    @Test
+    void shouldAccumulateErrorsWithCombine3() {
+        var firstName = Extractors.required(0, "firstName");
+        var lastName = Extractors.required(1, "lastName");
+        var age = Extractors.asInt(
+                Extractors.required(2, "age")
+        );
+
+        var person = Extractors.combine(
+                firstName,
+                lastName,
+                age,
+                PersonProfile::new
+        );
+
+        var result = person.extract(
+                List.of("", "", "abc")
+        );
+
+        assertThat(result).isEqualTo(
+                Validation.<Seq<ExtractionError>, PersonProfile>invalid(
+                        List.of(
+                                new ExtractionError(
+                                        "firstName",
+                                        "Value is required"
+                                ),
+                                new ExtractionError(
+                                        "lastName",
+                                        "Value is required"
+                                ),
+                                new ExtractionError(
+                                        "",
+                                        "Invalid integer: abc"
                                 )
                         )
                 )
