@@ -180,9 +180,7 @@ class ExtractorsTest {
     void shouldExtractInteger() {
         var row = List.of("42");
 
-        Extractor<String> stringExtractor = Extractors.required(0).map(String::trim);
-
-        var result = Extractors.asInt(stringExtractor)
+        var result = Extractors.asInt(Extractors.required(0))
                 .named("age")
                 .extract(row);
 
@@ -195,8 +193,7 @@ class ExtractorsTest {
     void shouldRejectInvalidInteger() {
         var row = List.of("abc");
 
-        Extractor<String> stringExtractor = Extractors.required(0).map(String::trim);
-        var result = Extractors.asInt(stringExtractor)
+        var result = Extractors.asInt(Extractors.required(0).map(String::trim))
                 .named("age")
                 .extract(row);
 
@@ -214,8 +211,7 @@ class ExtractorsTest {
     void shouldTrimBeforeConvertingToInteger() {
         var row = List.of(" 42 ");
 
-        Extractor<String> stringExtractor = Extractors.required(0).map(String::trim);
-        var result = Extractors.asInt(stringExtractor)
+        var result = Extractors.asInt(Extractors.required(0).map(String::trim))
                 .named("age")
                 .extract(row);
 
