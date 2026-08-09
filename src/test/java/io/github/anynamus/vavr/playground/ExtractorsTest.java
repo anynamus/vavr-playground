@@ -1,5 +1,6 @@
 package io.github.anynamus.vavr.playground;
 
+import io.github.anynamus.vavr.playground.model.ExtractionError;
 import io.github.anynamus.vavr.playground.model.Person;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
@@ -24,13 +25,18 @@ class ExtractorsTest {
 
     @Test
     void requiredExtractorShouldRejectMissingColumn() {
-        var row = List.of("John");
+        var row = List.of("John", "Doe");
 
         var result = Extractors.required(2).extract(row);
 
         assertThat(result).isEqualTo(
-                Validation.<Seq<String>, String>invalid(
-                        List.of("Column 2 is missing")
+                Validation.<Seq<ExtractionError>, String>invalid(
+                        List.of(
+                                new ExtractionError(
+                                        "2",
+                                        "Column is missing"
+                                )
+                        )
                 )
         );
     }
@@ -42,8 +48,13 @@ class ExtractorsTest {
         var result = Extractors.required(1).extract(row);
 
         assertThat(result).isEqualTo(
-                Validation.<Seq<String>, String>invalid(
-                        List.of("Column 1 is required")
+                Validation.<Seq<ExtractionError>, String>invalid(
+                        List.of(
+                                new ExtractionError(
+                                        "1",
+                                        "Value is required"
+                                )
+                        )
                 )
         );
     }
@@ -71,14 +82,19 @@ class ExtractorsTest {
     }
 
     @Test
-    void optinalExtractorShouldRejectMissingColumn() {
+    void optionalExtractorShouldRejectMissingColumn() {
         var row = List.of("John");
 
         var result = Extractors.optional(2).extract(row);
 
         assertThat(result).isEqualTo(
-                Validation.<Seq<String>, Option<String>>invalid(
-                        List.of("Column 2 is missing")
+                Validation.<Seq<ExtractionError>, Option<String>>invalid(
+                        List.of(
+                                new ExtractionError(
+                                        "2",
+                                        "Column is missing"
+                                )
+                        )
                 )
         );
     }
@@ -105,8 +121,11 @@ class ExtractorsTest {
                 .extract(row);
 
         assertThat(result).isEqualTo(
-                Validation.<Seq<String>, String>invalid(
-                        List.of("Column 0 is required")
+                Validation.<Seq<ExtractionError>, String>invalid(
+                        List.of(new ExtractionError(
+                                "0",
+                                "Value is required"
+                        ))
                 )
         );
     }
@@ -133,14 +152,20 @@ class ExtractorsTest {
         var result = Extractors.required(0)
                 .flatMap(value ->
                         Validation.invalid(
-                                List.of("Invalid value")
+                                List.of(new ExtractionError(
+                                        "0",
+                                        "Value is required"
+                                ))
                         )
                 )
                 .extract(row);
 
         assertThat(result).isEqualTo(
-                Validation.<Seq<String>, String>invalid(
-                        List.of("Invalid value")
+                Validation.<Seq<ExtractionError>, String>invalid(
+                        List.of(new ExtractionError(
+                                "0",
+                                "Value is required"
+                        ))
                 )
         );
     }
@@ -167,8 +192,11 @@ class ExtractorsTest {
         var result = Extractors.asInt(stringExtractor).extract(row);
 
         assertThat(result).isEqualTo(
-                Validation.<Seq<String>, Integer>invalid(
-                        List.of("Invalid integer: abc")
+                Validation.<Seq<ExtractionError>, Integer>invalid(
+                        List.of(new ExtractionError(
+                                "",
+                                "Invalid integer: abc"
+                        ))
                 )
         );
     }
@@ -223,8 +251,11 @@ class ExtractorsTest {
         );
 
         assertThat(result).isEqualTo(
-                Validation.<Seq<String>, Person>invalid(
-                        List.of("Column 0 is required")
+                Validation.<Seq<ExtractionError>, Person>invalid(
+                        List.of(new ExtractionError(
+                                "0",
+                                "Value is required"
+                        ))
                 )
         );
     }
@@ -245,10 +276,16 @@ class ExtractorsTest {
         );
 
         assertThat(result).isEqualTo(
-                Validation.<Seq<String>, Person>invalid(
+                Validation.<Seq<ExtractionError>, Person>invalid(
                         List.of(
-                                "Column 0 is required",
-                                "Column 1 is required"
+                                new ExtractionError(
+                                        "0",
+                                        "Value is required"
+                                ),
+                                new ExtractionError(
+                                        "1",
+                                        "Value is required"
+                                )
                         )
                 )
         );

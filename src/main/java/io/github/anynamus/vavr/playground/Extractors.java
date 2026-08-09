@@ -1,5 +1,6 @@
 package io.github.anynamus.vavr.playground;
 
+import io.github.anynamus.vavr.playground.model.ExtractionError;
 import io.vavr.Function2;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
@@ -17,7 +18,10 @@ public final class Extractors {
         return row -> {
             if (column >= row.size()) {
                 return Validation.invalid(
-                        List.of("Column " + column + " is missing")
+                        List.of(new ExtractionError(
+                                String.valueOf(column),
+                                "Column is missing"
+                        ))
                 );
             }
 
@@ -25,7 +29,10 @@ public final class Extractors {
 
             if (value == null || value.isBlank()) {
                 return Validation.invalid(
-                        List.of("Column " + column + " is required")
+                        List.of(new ExtractionError(
+                                String.valueOf(column),
+                                "Value is required"
+                        ))
                 );
             }
 
@@ -37,7 +44,10 @@ public final class Extractors {
         return row -> {
             if (column >= row.size()) {
                 return Validation.invalid(
-                        List.of("Column " + column + " is missing")
+                        List.of(new ExtractionError(
+                                String.valueOf(column),
+                                "Column is missing"
+                        ))
                 );
             }
 
@@ -54,7 +64,10 @@ public final class Extractors {
                 Try.of(() -> Integer.parseInt(value))
                         .fold(
                                 error -> Validation.invalid(
-                                        List.of("Invalid integer: " + value)
+                                        List.of(new ExtractionError(
+                                                "",
+                                                "Invalid integer: " + value
+                                        ))
                                 ),
                                 Validation::valid
                         )
