@@ -14,12 +14,12 @@ public final class Extractors {
     private Extractors() {
     }
 
-    public static Extractor<String> required(int column) {
+    public static Extractor<String> required(int column, String field) {
         return row -> {
             if (column >= row.size()) {
                 return Validation.invalid(
                         List.of(new ExtractionError(
-                                String.valueOf(column),
+                                field,
                                 "Column is missing"
                         ))
                 );
@@ -30,7 +30,7 @@ public final class Extractors {
             if (value == null || value.isBlank()) {
                 return Validation.invalid(
                         List.of(new ExtractionError(
-                                String.valueOf(column),
+                                field,
                                 "Value is required"
                         ))
                 );
@@ -40,12 +40,12 @@ public final class Extractors {
         };
     }
 
-    public static Extractor<Option<String>> optional(int column) {
+    public static Extractor<Option<String>> optional(int column, String field) {
         return row -> {
             if (column >= row.size()) {
                 return Validation.invalid(
                         List.of(new ExtractionError(
-                                String.valueOf(column),
+                                field,
                                 "Column is missing"
                         ))
                 );

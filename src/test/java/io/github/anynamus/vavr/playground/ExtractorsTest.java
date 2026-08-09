@@ -16,8 +16,8 @@ class ExtractorsTest {
     void shouldExtractRequiredValue() {
         var row = List.of("John", "Doe");
 
-        var result = Extractors.required(0).extract(row);
 
+        var result = Extractors.required(0, "lastName").extract(row);
         assertThat(result).isEqualTo(
                 Validation.valid("John")
         );
@@ -27,13 +27,13 @@ class ExtractorsTest {
     void requiredExtractorShouldRejectMissingColumn() {
         var row = List.of("John", "Doe");
 
-        var result = Extractors.required(2).extract(row);
+        var result = Extractors.required(2, "firstName").extract(row);
 
         assertThat(result).isEqualTo(
                 Validation.<Seq<ExtractionError>, String>invalid(
                         List.of(
                                 new ExtractionError(
-                                        "2",
+                                        "firstName",
                                         "Column is missing"
                                 )
                         )
@@ -45,13 +45,13 @@ class ExtractorsTest {
     void shouldRejectBlankValue() {
         var row = List.of("John", "");
 
-        var result = Extractors.required(1).extract(row);
+        var result = Extractors.required(1, "lastName").extract(row);
 
         assertThat(result).isEqualTo(
                 Validation.<Seq<ExtractionError>, String>invalid(
                         List.of(
                                 new ExtractionError(
-                                        "1",
+                                        "lastName",
                                         "Value is required"
                                 )
                         )
@@ -63,7 +63,7 @@ class ExtractorsTest {
     void shouldExtractOptionalValue() {
         var row = List.of("John", "Doe");
 
-        var result = Extractors.optional(1).extract(row);
+        var result = Extractors.optional(1, "lastName").extract(row);
 
         assertThat(result).isEqualTo(
                 Validation.valid(Option.of("Doe"))
@@ -74,7 +74,7 @@ class ExtractorsTest {
     void shouldReturnNoneForBlankValue() {
         var row = List.of("John", "");
 
-        var result = Extractors.optional(1).extract(row);
+        var result = Extractors.optional(1, "lastName").extract(row);
 
         assertThat(result).isEqualTo(
                 Validation.valid(Option.none())
@@ -85,13 +85,13 @@ class ExtractorsTest {
     void optionalExtractorShouldRejectMissingColumn() {
         var row = List.of("John");
 
-        var result = Extractors.optional(2).extract(row);
+        var result = Extractors.optional(2, "lastName").extract(row);
 
         assertThat(result).isEqualTo(
                 Validation.<Seq<ExtractionError>, Option<String>>invalid(
                         List.of(
                                 new ExtractionError(
-                                        "2",
+                                        "lastName",
                                         "Column is missing"
                                 )
                         )
@@ -103,7 +103,7 @@ class ExtractorsTest {
     void shouldMapExtractedValue() {
         var row = List.of("  John  ");
 
-        var result = Extractors.required(0)
+        var result = Extractors.required(0, "firstName")
                 .map(String::trim)
                 .extract(row);
 
@@ -116,14 +116,14 @@ class ExtractorsTest {
     void shouldPreserveExtractionError() {
         var row = List.of("");
 
-        var result = Extractors.required(0)
+        var result = Extractors.required(0, "firstName")
                 .map(String::trim)
                 .extract(row);
 
         assertThat(result).isEqualTo(
                 Validation.<Seq<ExtractionError>, String>invalid(
                         List.of(new ExtractionError(
-                                "0",
+                                "firstName",
                                 "Value is required"
                         ))
                 )
@@ -134,7 +134,7 @@ class ExtractorsTest {
     void shouldFlatMapExtractedValue() {
         var row = List.of("John");
 
-        var result = Extractors.required(0)
+        var result = Extractors.required(0, "firstName")
                 .flatMap(value ->
                         Validation.valid(value.toUpperCase())
                 )
@@ -149,11 +149,11 @@ class ExtractorsTest {
     void shouldReturnTransformationError() {
         var row = List.of("John");
 
-        var result = Extractors.required(0)
+        var result = Extractors.required(0, "firstName")
                 .flatMap(value ->
                         Validation.invalid(
                                 List.of(new ExtractionError(
-                                        "0",
+                                        "firstName",
                                         "Value is required"
                                 ))
                         )
@@ -163,7 +163,7 @@ class ExtractorsTest {
         assertThat(result).isEqualTo(
                 Validation.<Seq<ExtractionError>, String>invalid(
                         List.of(new ExtractionError(
-                                "0",
+                                "firstName",
                                 "Value is required"
                         ))
                 )
@@ -174,7 +174,7 @@ class ExtractorsTest {
     void shouldExtractInteger() {
         var row = List.of("42");
 
-        Extractor<String> stringExtractor = Extractors.required(0).map(String::trim);
+        Extractor<String> stringExtractor = Extractors.required(0, "age").map(String::trim);
 
         var result = Extractors.asInt(stringExtractor)
                 .extract(row);
@@ -188,7 +188,7 @@ class ExtractorsTest {
     void shouldRejectInvalidInteger() {
         var row = List.of("abc");
 
-        Extractor<String> stringExtractor = Extractors.required(0).map(String::trim);
+        Extractor<String> stringExtractor = Extractors.required(0, "age").map(String::trim);
         var result = Extractors.asInt(stringExtractor).extract(row);
 
         assertThat(result).isEqualTo(
@@ -205,7 +205,7 @@ class ExtractorsTest {
     void shouldTrimBeforeConvertingToInteger() {
         var row = List.of(" 42 ");
 
-        Extractor<String> stringExtractor = Extractors.required(0).map(String::trim);
+        Extractor<String> stringExtractor = Extractors.required(0, "age").map(String::trim);
         var result = Extractors.asInt(stringExtractor).extract(row);
 
         assertThat(result).isEqualTo(
@@ -215,8 +215,8 @@ class ExtractorsTest {
 
     @Test
     void shouldCombineTwoExtractors() {
-        var firstName = Extractors.required(0);
-        var lastName = Extractors.required(1);
+        var firstName = Extractors.required(0, "firstName");
+        var lastName = Extractors.required(1, "lastName");
 
         var person = Extractors.combine(
                 firstName,
@@ -237,8 +237,8 @@ class ExtractorsTest {
 
     @Test
     void shouldReturnErrorWhenOneExtractionFails() {
-        var firstName = Extractors.required(0);
-        var lastName = Extractors.required(1);
+        var firstName = Extractors.required(0,"firstName");
+        var lastName = Extractors.required(1, "lastName");
 
         var person = Extractors.combine(
                 firstName,
@@ -253,7 +253,7 @@ class ExtractorsTest {
         assertThat(result).isEqualTo(
                 Validation.<Seq<ExtractionError>, Person>invalid(
                         List.of(new ExtractionError(
-                                "0",
+                                "firstName",
                                 "Value is required"
                         ))
                 )
@@ -262,8 +262,8 @@ class ExtractorsTest {
 
     @Test
     void shouldAccumulateErrors() {
-        var firstName = Extractors.required(0);
-        var lastName = Extractors.required(1);
+        var firstName = Extractors.required(0, "firstName");
+        var lastName = Extractors.required(1, "lastName");
 
         var person = Extractors.combine(
                 firstName,
@@ -279,11 +279,11 @@ class ExtractorsTest {
                 Validation.<Seq<ExtractionError>, Person>invalid(
                         List.of(
                                 new ExtractionError(
-                                        "0",
+                                        "firstName",
                                         "Value is required"
                                 ),
                                 new ExtractionError(
-                                        "1",
+                                        "lastName",
                                         "Value is required"
                                 )
                         )
