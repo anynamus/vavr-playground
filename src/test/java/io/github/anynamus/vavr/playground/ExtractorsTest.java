@@ -81,4 +81,32 @@ class ExtractorsTest {
                 )
         );
     }
+
+    @Test
+    void shouldMapExtractedValue() {
+        var row = List.of("  John  ");
+
+        var result = Extractors.required(0)
+                .map(String::trim)
+                .extract(row);
+
+        assertThat(result).isEqualTo(
+                Validation.valid("John")
+        );
+    }
+
+    @Test
+    void shouldPreserveExtractionError() {
+        var row = List.of("");
+
+        var result = Extractors.required(0)
+                .map(String::trim)
+                .extract(row);
+
+        assertThat(result).isEqualTo(
+                Validation.<Seq<String>, String>invalid(
+                        List.of("Column 0 is required")
+                )
+        );
+    }
 }
