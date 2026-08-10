@@ -4,6 +4,8 @@ import io.github.anynamus.vavr.playground.model.ExtractionError;
 import io.vavr.Function2;
 import io.vavr.Function3;
 import io.vavr.collection.List;
+import io.vavr.collection.Seq;
+import io.vavr.control.Either;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
@@ -72,6 +74,18 @@ public final class Extractors {
                                 ),
                                 Validation::valid
                         )
+        );
+    }
+
+    static <A> Either<String, A> toEither(Validation<Seq<ExtractionError>, A> validation) {
+
+        return validation.fold(
+                errors -> Either.left(
+                        errors
+                                .map(ExtractionError::message)
+                                .mkString("\n")
+                ),
+                Either::right
         );
     }
 

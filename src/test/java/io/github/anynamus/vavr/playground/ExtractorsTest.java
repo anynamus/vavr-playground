@@ -5,6 +5,7 @@ import io.github.anynamus.vavr.playground.model.Person;
 import io.github.anynamus.vavr.playground.model.PersonProfile;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
+import io.vavr.control.Either;
 import io.vavr.control.Option;
 import io.vavr.control.Validation;
 import org.junit.jupiter.api.Test;
@@ -17,8 +18,8 @@ class ExtractorsTest {
     void shouldExtractRequiredValue() {
         var row = List.of("John", "Doe");
 
-
         var result = Extractors.required(0).named("lastName").extract(row);
+
         assertThat(result).isEqualTo(
                 Validation.valid("John")
         );
@@ -431,5 +432,27 @@ class ExtractorsTest {
         assertThat(result).isEqualTo(
                 Validation.valid("John")
         );
+    }
+
+    @Test
+    void toEitherShouldReturnObjectOnSucess() {
+        var row = List.of("John", "Doe");
+        var result = Extractors.required(0).named("lastName").extract(row);
+
+        Either<String, String> either = Extractors.toEither(result);
+
+        assertThat(either.isRight()).isTrue();
+        assertThat(either.get()).isEqualTo("John");
+    }
+
+    @Test
+    void toEitherShouldReturnErrorOnFailure() {
+        var row = List.of("", "Doe");
+        var result = Extractors.required(0).named("lastName").extract(row);
+
+        Either<String, String> either = Extractors.toEither(result);
+
+        assertThat(either.isLeft()).isTrue();
+        assertThat(either.getLeft()).isEqualTo("Value is required");
     }
 }
